@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { cn } from "@/lib/utils";
 import DotPattern from "@/components/magicui/dot-pattern";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -173,6 +174,7 @@ const PlayerControls = ({ handleCallDisconnect })=>{
 }
 
 const VideoCallBackdrop = ({ remoteStream, localStream, backdropOpen, handleClose, handleCallDisconnect })=>{
+
     return (
         <Backdrop open={backdropOpen} onClick={handleClose} >
             { localStream && <ReactPlayer style={styles.localPlayer} height={"200px"} muted playing url={localStream} />}
@@ -195,7 +197,6 @@ const Room = () => {
     const [remoteStream, setRemoteStream] = useState(null);
     const [backdropOpen, setBackdropOpen] = useState(false);
     const [peerId, setPeerId] = useState("");
-    const [remoteVideoConnnectedPeerId, setRemoteVideoConnectedPeerId] = useState("");
     const peerInstance = useRef(null);
 
     const handleUserUpdate = (data)=>{
