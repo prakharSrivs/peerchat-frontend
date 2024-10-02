@@ -2,8 +2,8 @@
 import { cn } from "@/lib/utils";
 import DotPattern from "@/components/magicui/dot-pattern";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Backdrop, ButtonBase, Grid2, Menu, MenuItem, Typography } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { Alert, Backdrop, ButtonBase, Grid2, LinearProgress, Menu, MenuItem, Snackbar, Typography } from "@mui/material";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { generateFromString } from 'generate-avatar'
@@ -13,10 +13,19 @@ import Peer from 'peerjs';
 import CallEndIcon from '@mui/icons-material/CallEnd';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import { blue } from '@mui/material/colors';
+import ShareIcon from '@mui/icons-material/Share';
 
 const styles = {
     meetingCard:{
         border:"0.5px solid grey",
+        display:"flex",
+        justifyContent:"center",
+        alignItems:"center",
+        cursor:"pointer",
+        fontFamily:"Open Sans"
+    },
+    shareLink:{
         display:"flex",
         justifyContent:"center",
         alignItems:"center",
@@ -100,6 +109,35 @@ const RoomNavbar = ()=>{
                 </div>
             </CopyToClipboard>
         </div>
+    )
+}
+
+const ShareCopyLink = ({ copied, setCopied })=>{
+
+    const { id } = useParams();
+    const location = useLocation();
+    const url = window.location.href;
+    const hostLink = url.substring(0, url.indexOf(location.pathname))
+
+    return (
+        <CopyToClipboard
+            text={hostLink+"/lobby/join?room-id="+id}
+            onCopy={()=>setCopied(true)}
+        >
+            <div 
+                className="rounded bg-black text-white border-none" 
+                style={styles.shareLink} 
+                onMouseLeave={() => setTimeout(()=>setCopied(false),2000)}
+            >
+                {
+                    copied ? <> Copied </> :
+                    <>
+                    Click to Share Joining Link
+                    <ContentCopyIcon sx={styles.copyIcon} />
+                    </>
+                }
+            </div>
+        </CopyToClipboard>
     )
 }
 
@@ -197,10 +235,14 @@ const Room = () => {
     const [remoteStream, setRemoteStream] = useState(null);
     const [backdropOpen, setBackdropOpen] = useState(false);
     const [peerId, setPeerId] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [snackbarOpen, setSnackbarOpen] = useState(true);
+    const [copied, setCopied] = useState(false);
     const peerInstance = useRef(null);
 
     const handleUserUpdate = (data)=>{
         setParticipantsList(data);
+        setLoading(false);
     }
 
     const handleCall = (remotePeerId) => {
@@ -267,6 +309,16 @@ const Room = () => {
   return (
     <div className='w-screen h-screen overflow-hidden bg-black' >
         <DotPattern className={cn("[mask-image:radial-gradient(800px_circle_at_center,white,transparent)]")} />
+        { loading && <LinearProgress color={"primary"} /> }
+        <Snackbar open={snackbarOpen} autoHideDuration={10000} >
+            <Alert
+                severity={copied ? "success" : "info"}
+                variant="outlined"
+                sx={{ width: '100%' }}
+            >
+                <ShareCopyLink copied={copied} setCopied={setCopied} />
+            </Alert>
+        </Snackbar>
         <RoomNavbar />
         <RenderAllAvatars handleCall={handleCall} participantsList={participantsList} />
         <VideoCallBackdrop 

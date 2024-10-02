@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import axios from "axios"
 import { Box, Button, TextField, Typography } from '@mui/material';
 
@@ -26,6 +26,8 @@ const Lobby = () => {
     const [email,setEmail] = useState("");
     const [roomId, setRoomId] = useState("");
     const { type } = useParams();
+    const [searchParams] = useSearchParams();
+    const [loading, setLoading] = useState(false)
 
     const handleCreateRoom = async ()=>{
         if( email.length == 0 ) return;
@@ -36,10 +38,12 @@ const Lobby = () => {
             console.log(e);
             alert(e.message);
         }
+        setLoading(false);
     }
     
     const handleJoinRoom = async()=>{
-        if( roomId.length==0 || email.length==0 ) return; 
+        if( email.length == 0 ) alert(" Please enter your email ")
+        if( roomId.length==0 || email.length==0 ) return;
         try{
             const data: ReqBody = {
                 roomId: roomId
@@ -51,9 +55,11 @@ const Lobby = () => {
         }catch(e){
             console.log(e.message);
         }
+        setLoading(false);
     }
 
     const handleClick = async ()=>{
+        setLoading(true);
         localStorage.setItem("email",email);
         switch(type){
             case "join":
@@ -65,6 +71,12 @@ const Lobby = () => {
                 navigate('/')
         }
     }
+
+    useEffect(()=>{
+        const meetingIdFromUrl = searchParams.get("room-id");
+        console.log()
+        if( meetingIdFromUrl ) setRoomId(meetingIdFromUrl);
+    },[])
 
   return (
     <div 
@@ -97,11 +109,12 @@ const Lobby = () => {
                     onChange={(e)=>setRoomId(e.target.value)}
                     variant='outlined'
                     label="Room Id"
+                    value={roomId}
                 />
             }
-            <Button variant='contained' size='large' color='primary' onClick={handleClick}>
-                { type==='join' ? "Join" : "Create" } Room
-            </Button>
+            <Button variant='contained' size='large' color='primary' onClick={handleClick} disabled={loading}>
+                { loading ? "Loading..." : type==='join' ? "Join Room" : "Create Room" }
+            </Button>   
         </Box>
     </div>
   )
