@@ -26,7 +26,6 @@ const Lobby = ({ type }) => {
     const [email,setEmail] = useState("");
     const [roomId, setRoomId] = useState("");
     const { id } = useParams();
-    const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false)
 
     const handleCreateRoom = async ()=>{
