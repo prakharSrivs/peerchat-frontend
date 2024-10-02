@@ -9,7 +9,7 @@ function App() {
   return (
     <Routes>
       <Route path={'/'} element={<CreateRoom />}  />
-      <Route path={'/lobby/:type'} element={<Lobby />} />
+      <Route path={'/lobby/:type/*'} element={<Lobby />} />
       <Route path={'/join/:id'} element={<Room />} />
     </Routes>
   )
