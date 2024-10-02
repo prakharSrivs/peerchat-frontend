@@ -121,7 +121,7 @@ const ShareCopyLink = ({ copied, setCopied })=>{
 
     return (
         <CopyToClipboard
-            text={hostLink+"/lobby/join?room-id="+id}
+            text={hostLink+"/lobby/join/?room-id="+id}
             onCopy={()=>setCopied(true)}
         >
             <div 
