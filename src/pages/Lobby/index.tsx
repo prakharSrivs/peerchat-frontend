@@ -20,12 +20,12 @@ interface ReqBody {
     roomId : string
 }
 
-const Lobby = () => {
+const Lobby = ({ type }) => {
 
     const navigate = useNavigate();
     const [email,setEmail] = useState("");
     const [roomId, setRoomId] = useState("");
-    const { type } = useParams();
+    const { id } = useParams();
     const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false)
 
@@ -73,9 +73,7 @@ const Lobby = () => {
     }
 
     useEffect(()=>{
-        const meetingIdFromUrl = searchParams.get("room-id");
-        console.log()
-        if( meetingIdFromUrl ) setRoomId(meetingIdFromUrl);
+        if( id ) setRoomId(id);
     },[])
 
   return (
