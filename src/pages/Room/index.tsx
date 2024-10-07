@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import DotPattern from "@/components/magicui/dot-pattern";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Alert, Backdrop, ButtonBase, Grid2, LinearProgress, Menu, MenuItem, Snackbar, Typography } from "@mui/material";
+import { Alert, Backdrop, Box, Button, ButtonBase, Grid2, LinearProgress, Menu, MenuItem, Snackbar, Typography } from "@mui/material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
@@ -15,6 +15,7 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { blue } from '@mui/material/colors';
 import ShareIcon from '@mui/icons-material/Share';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 const styles = {
     meetingCard:{
@@ -76,6 +77,27 @@ const styles = {
         position:"absolute",
         bottom:"0",
         gap:"50px"
+    },
+    exitButton:{
+        position:'absolute',
+        bottom:"25px",
+        right:"40px"
+    },
+    dialogContainer:{
+        height:"200px",
+        background:"#212121",
+        display:"flex",
+        justifyContent:"space-around",
+        flexDirection:"column",
+        alignItems:"center",
+        padding:"20px 40px",
+        borderRadius:"8px"
+    },
+    buttonContainer:{
+        display:"flex",
+        justifyContent:"center",
+        alignItems:"center",
+        gap:"40px"
     }
 }
 
@@ -224,6 +246,48 @@ const VideoCallBackdrop = ({ remoteStream, localStream, backdropOpen, handleClos
     )
 }
 
+const ConfirmLeave = ({ openConfirmationDialog, handleOpenConfirmationDialog })=>{
+
+    const navigate = useNavigate();
+
+    const leaveRoom = ()=>{
+        navigate("/")
+    }
+
+    return (
+        <Backdrop open={openConfirmationDialog} onClick={()=> handleOpenConfirmationDialog(false)}>
+            <Grid2 sx={styles.dialogContainer}>
+                <Typography
+                    textAlign={"center"}
+                    fontFamily={"Open Sans"}
+                    fontSize={"20px"}
+                    color="white"
+                >
+                    Are you sure you want to leave the room ?
+                </Typography>
+                <Box sx={styles.buttonContainer}>
+                    <Button 
+                        size="large" 
+                        variant="contained" 
+                        color="error" 
+                        onClick={leaveRoom} 
+                    >
+                        Yes
+                    </Button>
+                    <Button 
+                        size="large" 
+                        variant="outlined" 
+                        color="error" 
+                        onClick={()=> handleOpenConfirmationDialog(false)} 
+                    >
+                        No
+                    </Button>
+                </Box>
+            </Grid2>
+        </Backdrop>
+    )
+}
+
 const Room = () => {
 
     const email = localStorage.getItem("email");
@@ -238,6 +302,7 @@ const Room = () => {
     const [loading, setLoading] = useState(true);
     const [snackbarOpen, setSnackbarOpen] = useState(true);
     const [copied, setCopied] = useState(false);
+    const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
     const peerInstance = useRef(null);
 
     const handleUserUpdate = (data)=>{
@@ -266,11 +331,14 @@ const Room = () => {
     }
 
     const handleCallDisconnect = ()=>{
-        peerInstance.current.disconnect();
         setRemoteStream(null);
         setLocalStream(null);
         setBackdropOpen(false);
         handleStopStream(localStream);
+    }
+
+    const handleLeaveRoom = ()=>{
+        setOpenConfirmationDialog(true);
     }
 
     useEffect(()=>{
@@ -292,12 +360,7 @@ const Room = () => {
                 });
             });
         })
-        peer.on('disconnected',()=>{
-            setRemoteStream(null);
-            setLocalStream(null);
-            setBackdropOpen(false);
-            handleStopStream(localStream);
-        })
+        peer.on('disconnected', handleCallDisconnect)
         socket.on("user:update", handleUserUpdate);
         peerInstance.current = peer;
 
@@ -319,8 +382,21 @@ const Room = () => {
                 <ShareCopyLink copied={copied} setCopied={setCopied} />
             </Alert>
         </Snackbar>
+        <Button 
+            sx={styles.exitButton} 
+            variant="outlined" 
+            color="error"
+            startIcon={<ExitToAppIcon />}
+            onClick={handleLeaveRoom}
+        > 
+            Leave Room 
+        </Button>
         <RoomNavbar />
         <RenderAllAvatars handleCall={handleCall} participantsList={participantsList} />
+        <ConfirmLeave 
+            openConfirmationDialog={openConfirmationDialog} 
+            handleOpenConfirmationDialog={setOpenConfirmationDialog} 
+        />
         <VideoCallBackdrop 
             remoteStream={remoteStream} 
             localStream={localStream} 

@@ -42,7 +42,10 @@ const Lobby = ({ type }) => {
     
     const handleJoinRoom = async()=>{
         if( email.length == 0 ) alert(" Please enter your email ")
-        if( roomId.length==0 || email.length==0 ) return;
+        if( roomId.length==0 || email.length==0 ){
+            setLoading(false);
+            return;
+        }
         try{
             const data: ReqBody = {
                 roomId: roomId
